@@ -18,6 +18,9 @@ logger = logging.getLogger("app")
 @asynccontextmanager
 async def lifespan(_: FastAPI):
     # create_all keeps the demo simple; use Alembic migrations in a real deployment.
+    settings = get_settings()
+    if settings.secret_key == "change-me" and not settings.database_url.startswith("sqlite"):
+        raise RuntimeError("Set a strong SECRET_KEY before running against a real database")
     Base.metadata.create_all(engine)
     get_storage().ensure_bucket()
     yield

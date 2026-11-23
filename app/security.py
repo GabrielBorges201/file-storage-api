@@ -1,4 +1,4 @@
-from datetime import datetime, timedelta, timezone
+from datetime import UTC, datetime, timedelta
 from typing import Annotated
 
 import bcrypt
@@ -20,11 +20,14 @@ def hash_password(password: str) -> str:
 
 
 def verify_password(password: str, hashed: str) -> bool:
-    return bcrypt.checkpw(password.encode(), hashed.encode())
+    raw = password.encode()
+    if len(raw) > 72:  # bcrypt would raise; such a password can never match
+        return False
+    return bcrypt.checkpw(raw, hashed.encode())
 
 
 def create_access_token(user_id: int, settings: Settings) -> str:
-    expire = datetime.now(timezone.utc) + timedelta(minutes=settings.access_token_expire_minutes)
+    expire = datetime.now(UTC) + timedelta(minutes=settings.access_token_expire_minutes)
     return jwt.encode({"sub": str(user_id), "exp": expire}, settings.secret_key, algorithm=ALGORITHM)
 
 
@@ -42,7 +45,7 @@ def get_current_user(
         payload = jwt.decode(token, settings.secret_key, algorithms=[ALGORITHM])
         user_id = int(payload["sub"])
     except (jwt.PyJWTError, KeyError, ValueError):
-        raise credentials_error
+        raise credentials_error from None
     user = db.get(User, user_id)
     if user is None:
         raise credentials_error

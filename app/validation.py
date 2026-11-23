@@ -69,4 +69,4 @@ def validate_content(head: bytes, rule: FileRule) -> None:
         # incremental decoder tolerates a multibyte char cut at the end of the sample
         codecs.getincrementaldecoder("utf-8")().decode(head, final=False)
     except UnicodeDecodeError:
-        raise HTTPException(status_code=415, detail="Text files must be UTF-8 encoded")
+        raise HTTPException(status_code=415, detail="Text files must be UTF-8 encoded") from None

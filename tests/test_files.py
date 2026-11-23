@@ -1,4 +1,3 @@
-import pytest
 from botocore.exceptions import ClientError
 
 from tests.conftest import BUCKET
@@ -104,7 +103,8 @@ def test_delete_removes_object_and_record(client, headers, s3):
 
 
 # ------------------------------ presigned flow ------------------------------ #
-def presign(client, headers, name="photo.png", mime="image/png", size=len(PNG)):
+def presign(client, headers, name="photo.png", mime="image/png", size=None):
+    size = len(PNG) if size is None else size
     return client.post(
         "/files/presign",
         json={"filename": name, "content_type": mime, "size_bytes": size},

@@ -26,7 +26,7 @@ def register(body: UserCreate, db: Annotated[Session, Depends(get_db)]):
         db.commit()
     except IntegrityError:  # race: same email registered concurrently
         db.rollback()
-        raise HTTPException(status_code=409, detail="Email already registered")
+        raise HTTPException(status_code=409, detail="Email already registered") from None
     return user
 
 
